@@ -1,0 +1,9 @@
+analysis/.venv/
+analysis/stems/
+analysis/song.wav
+analysis/__pycache__/
+video/node_modules/
+video/out/
+video/sheets/
+.DS_Store
+Strings_music_video.mp4

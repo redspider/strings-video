@@ -1,0 +1,22 @@
+import { sheet, label } from './sheetkit.mjs';
+import * as D from '../src/draw.js';
+import { drawLyric, LYRICS } from '../src/lyrics.js';
+await sheet('sheets/draw_primitives.png', 1920, 1080, (ctx) => {
+  D.vGradient(ctx, [[0, '#7ec8f0'], [1, '#bfe6ff']], 0, 0, 1920, 540);
+  D.vGradient(ctx, [[0, '#0e0b26'], [1, '#231a4f']], 0, 540, 1920, 540);
+  D.cloud(ctx, 200, 200, 300, 140, { seed: 2 });
+  D.cloud(ctx, 560, 160, 220, 100, { seed: 5 });
+  D.smokePuff(ctx, 850, 250, 120, { u: 0.4, seed: 3 });
+  D.explosion(ctx, 1150, 250, 160, 0.2);
+  D.explosion(ctx, 1500, 250, 160, 0.55);
+  D.cartoonStar(ctx, 1780, 120, 60);
+  D.speechBubble(ctx, 1760, 400, 260, 150, 1650, 520, { spiky: true }, (c) => D.cartoonText(c, '#@%&!', 1760, 400, { size: 64, fill: '#e8453c', shadow: false }));
+  D.starfield(ctx, { x0: 0, y0: 540, w: 1920, h: 540, count: 220, t: 20 });
+  D.planet(ctx, 250, 800, 170, { base: '#d67be0', bands: ['#b35ac0', '#f0a4e8', '#9c49b0'], ring: true });
+  D.planet(ctx, 700, 820, 120, { base: '#9aa3b5', craters: 7 });
+  D.planet(ctx, 1050, 820, 130, { base: '#3a86ff' });
+  D.cartoonText(ctx, 'THE END', 1500, 700, { size: 150 });
+  drawLyric(ctx, 57.5, LYRICS.gravity, 1450, 950, {});
+  D.sparkle(ctx, 1250, 650, 40);
+  D.speedLines(ctx, 1500, 800, 3.3, { count: 20, inner: 150, outer: 400 });
+});

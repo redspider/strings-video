@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Strings — preview</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #111; color: #eee; font: 14px -apple-system, system-ui, sans-serif; }
+  #wrap { max-width: 1280px; margin: 0 auto; padding: 12px; }
+  canvas { width: 100%; aspect-ratio: 16/9; display: block; background: #000; border-radius: 6px; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  input[type=range] { flex: 1; min-width: 200px; }
+  button { background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+  #scenes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  #scenes button { font-size: 11px; padding: 3px 6px; }
+  #t { font-variant-numeric: tabular-nums; min-width: 190px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="1920" height="1080"></canvas>
+  <div class="bar">
+    <button id="play">Play</button>
+    <input id="seek" type="range" min="0" max="128" step="0.01" value="0">
+    <span id="t">0.00</span>
+    <label><input id="dbg" type="checkbox"> debug</label>
+    <label>res <select id="res"><option value="1">1080p</option><option value="0.5" selected>540p</option></select></label>
+  </div>
+  <div id="scenes"></div>
+  <audio id="a" src="../Strings.m4a" preload="auto"></audio>
+</div>
+<script type="module">
+  import { renderFrame, SCENE_LIST } from './src/engine.js';
+  import { beatAt, barAt } from './src/timing.js';
+  const c = document.getElementById('c'), ctx = c.getContext('2d');
+  const a = document.getElementById('a'), seek = document.getElementById('seek');
+  const tEl = document.getElementById('t'), dbg = document.getElementById('dbg'), res = document.getElementById('res');
+  const makeCanvas = (w, h) => { const k = document.createElement('canvas'); k.width = w; k.height = h; return k; };
+  let scale = 0.5;
+  const setRes = () => { scale = +res.value; c.width = 1920 * scale; c.height = 1080 * scale; };
+  res.onchange = setRes; setRes();
+  const params = new URLSearchParams(location.search);
+  if (params.has('t')) a.currentTime = +params.get('t');
+  document.getElementById('play').onclick = () => (a.paused ? a.play() : a.pause());
+  a.onplay = () => (document.getElementById('play').textContent = 'Pause');
+  a.onpause = () => (document.getElementById('play').textContent = 'Play');
+  seek.oninput = () => { a.currentTime = +seek.value; };
+  const sc = document.getElementById('scenes');
+  for (const s of SCENE_LIST) {
+    const b = document.createElement('button');
+    b.textContent = s.id.replace(/^s\d+_/, '');
+    b.title = `${s.start.toFixed(2)}–${s.end.toFixed(2)}`;
+    b.onclick = () => { a.currentTime = s.start; };
+    sc.appendChild(b);
+  }
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); a.paused ? a.play() : a.pause(); }
+    if (e.code === 'ArrowLeft') a.currentTime = Math.max(0, a.currentTime - (e.shiftKey ? 0.6 : 1 / 30));
+    if (e.code === 'ArrowRight') a.currentTime = a.currentTime + (e.shiftKey ? 0.6 : 1 / 30);
+  });
+  function loop() {
+    const t = a.currentTime;
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    renderFrame(ctx, t, { makeCanvas, debug: dbg.checked });
+    if (document.activeElement !== seek) seek.value = t;
+    tEl.textContent = `${t.toFixed(2)}s  bar ${Math.floor(barAt(t))}  beat ${Math.floor(beatAt(t))}`;
+    requestAnimationFrame(loop);
+  }
+  loop();
+</script>
+</body>
+</html>
